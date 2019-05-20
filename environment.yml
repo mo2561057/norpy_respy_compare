@@ -14,5 +14,6 @@ dependencies:
   - scipy
   - flake8
   - jupyterlab
-  - pip:
-- oyaml
+  - pyyaml
+  
+
