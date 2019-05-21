@@ -11,19 +11,20 @@ from optimizers.auxiliray_pyogba import wrapper_pybobyqa
 # Define which paramteres to optimize over!
 # Which one do we start with anyways
 # Shall we specify a full contraint vector ????????
+#This is a quite ugly workaround! Think abut better way
 optim_paras = {
     "coeffs_common": slice(0, 2),
-    "coeffs_home": slice(2, 6),
-    "coeffs_edu": slice(6, 14),
-    "coeffs_work": slice(14, 27),
+    "coeffs_home": slice(2, 5),
+    "coeffs_edu": slice(5, 12),
+    "coeffs_work": slice(12, 25),
 }
 ###We want to generate a set of obeservations to be simulated. WHich decsions do we need
 num_agents_obs = 100
-num_boots = 100
+num_boots = 20
 num_periods = 20
 max_evals = 100000
 decision_array = np.random.randint(1, 4, size=2000)
-period_array = np.array([np.arange(1, 21)] * 100).reshape(2000)
+period_array = np.array([np.arange(0, 20)] * 100).reshape(2000)
 identifier_array = np.zeros(2000)
 for x in range(2000):
     identifier_array[x] = int(np.floor(x / 10) + 1)
@@ -45,7 +46,7 @@ moment_obs = get_moments(sim_df)
 
 weighting_matrix = get_weigthing_matrix(sim_df, num_agents_obs, num_boots)
 
-initialization_object = get_random_model_specification()
+initialization_object = get_random_model_specification(constr = {"num_periods":20,"num_agents_sim":5})
 
 # Now we start with the optimization
 args = (
@@ -59,9 +60,6 @@ args = (
 adapter_smm = SimulationBasedEstimationCls(*args)
 
 
-kwargs = dict()
-kwargs["scaling_within_bounds"] = False
-kwargs["objfun_has_noise"] = True
-kwargs["maxfun"] = 10e6
 
-rslt = pybobyqa.solve(adapter_smm.evaluate, adapter_smm.free_params, **kwargs)
+
+rslt = pybobyqa.solve(adapter_smm.evaluate, adapter_smm.free_params)

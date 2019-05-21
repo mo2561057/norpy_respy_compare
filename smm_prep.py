@@ -24,9 +24,9 @@ def extract_relevant_results(array):
 
         df = pd.DataFrame(
             {
-                "period": list(array[:, 2]),
-                "choice": list(array[:, 3]),
-                "wages": list(array[:, 4]),
+                "period": list(array[:, 1]),
+                "choice": list(array[:, 2]),
+                "wages": list(array[:, 3]),
             }
         )
     else:
