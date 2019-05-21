@@ -1,11 +1,7 @@
-name: dev_norpy
-
-channels:
-  - conda
-  - conda-forge
+name: ov_analysis
 
 dependencies:
-  - python=3.7
+  - python=3.6
   - numpy
   - pandas
   - statsmodels
@@ -13,7 +9,16 @@ dependencies:
   - pytest-xdist
   - scipy
   - flake8
-  - jupyterlab
+  - matplotlib
+  - jupyter
+  - seaborn
+  - pip
   - yaml
-  
-
+  - pip:
+    - pysftp 
+    - Py-BOBYQA
+    - DFO-LS
+    - mpi4py
+    - PyPDF2
+    - jupyterlab
+- pygraphviz
