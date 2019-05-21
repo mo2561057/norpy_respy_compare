@@ -10,6 +10,16 @@ from collections import OrderedDict
 from norpy.model_spec import get_model_obj
 
 
+
+def moments_dict_to_list(moments_dict):
+    """This function constructs a list of available moments based on the moment dictionary."""
+    moments_list = []
+    for group in moments_dict.keys():
+        for period in moments_dict[group].keys():
+            moments_list.extend(moments_dict[group][period])
+    return moments_list
+
+
 def update_model_spec(free_params, model_object, optim_paras):
     model_spec_dict = model_object.as_dict()
     for x in range(len(optim_paras)):
@@ -39,6 +49,7 @@ def get_moments(result_array, is_store=False):
        a pd DataFrame altough would suggest that this is faster !
     """
     # Is des sinnvoll den hier reinzupacken? Könnte langsam werden
+
 
     analysis_df = extract_relevant_results(result_array)
     moments = OrderedDict()
@@ -82,7 +93,7 @@ def get_weigthing_matrix(df_base, num_boots, num_agents_smm):
     np.random.seed(123)
 
     # Distribute clear baseline information.
-    index_base = df_base.index().unique()
+    index_base = df_base["identifier"].unique()
     moments_base = get_moments(df_base)
     num_boots_max = num_boots * 2
 
@@ -93,10 +104,9 @@ def get_weigthing_matrix(df_base, num_boots, num_agents_smm):
 
         try:
             sample_ids = np.random.choice(index_base, num_agents_smm, replace=False)
-            moments_boot = get_moments(df_base.loc[index_base,:])
+            moments_boot = get_moments(df_base[df_base["identifier"].isin(sample_ids) ])
 
-            # We want to confirm that we have valid values for all required moments that we were
-            # able to calculate on the observed dataset.
+            #We check whether we have moments for all periods
             for group in ["Choice Probability", "Wage Distribution"]:
                 for period in moments_base[group].keys():
                     if period not in moments_boot[group].keys():
@@ -145,5 +155,3 @@ def get_weigthing_matrix(df_base, num_boots, num_agents_smm):
     return weighing_matrix
 
 
-def weighting_matrix(mom_df):
-    weighting_matrix()
