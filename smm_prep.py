@@ -10,7 +10,6 @@ from collections import OrderedDict
 from norpy.model_spec import get_model_obj
 
 
-
 def moments_dict_to_list(moments_dict):
     """This function constructs a list of available moments based on the moment dictionary."""
     moments_list = []
@@ -20,22 +19,14 @@ def moments_dict_to_list(moments_dict):
     return moments_list
 
 
-def update_model_spec(free_params, model_object, optim_paras):
-    model_spec_dict = model_object.as_dict()
-    for x in range(len(optim_paras)):
-        model_spec_dict[optim_paras[x]] = free_params[x]
-    out = get_model_obj(model_spec_dict)
-    return out
-
-
 def extract_relevant_results(array):
     if type(array) == np.ndarray:
 
         df = pd.DataFrame(
             {
-                "period": array[:, 2].reshape(len(array), 1),
-                "choice": array[:, 3].reshape(len(array), 1),
-                "wages": array[:, 4].reshape(len(array), 1),
+                "period": list(array[:, 2]),
+                "choice": list(array[:, 3]),
+                "wages": list(array[:, 4]),
             }
         )
     else:
@@ -49,7 +40,6 @@ def get_moments(result_array, is_store=False):
        a pd DataFrame altough would suggest that this is faster !
     """
     # Is des sinnvoll den hier reinzupacken? Könnte langsam werden
-
 
     analysis_df = extract_relevant_results(result_array)
     moments = OrderedDict()
@@ -104,9 +94,9 @@ def get_weigthing_matrix(df_base, num_boots, num_agents_smm):
 
         try:
             sample_ids = np.random.choice(index_base, num_agents_smm, replace=False)
-            moments_boot = get_moments(df_base[df_base["identifier"].isin(sample_ids) ])
+            moments_boot = get_moments(df_base[df_base["identifier"].isin(sample_ids)])
 
-            #We check whether we have moments for all periods
+            # We check whether we have moments for all periods
             for group in ["Choice Probability", "Wage Distribution"]:
                 for period in moments_base[group].keys():
                     if period not in moments_boot[group].keys():
@@ -153,5 +143,3 @@ def get_weigthing_matrix(df_base, num_boots, num_agents_smm):
     weighing_matrix = np.diag(moments_var ** (-1))
 
     return weighing_matrix
-
-
