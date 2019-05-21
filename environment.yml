@@ -1,4 +1,4 @@
-name: ov_analysis
+name: dev_norpy
 
 dependencies:
   - python=3.6
@@ -12,8 +12,9 @@ dependencies:
   - matplotlib
   - jupyter
   - seaborn
-  - pip
   - yaml
+  - pip
+  
   - pip:
     - pysftp 
     - Py-BOBYQA
@@ -21,4 +22,4 @@ dependencies:
     - mpi4py
     - PyPDF2
     - jupyterlab
-- pygraphviz
+    - pygraphviz

@@ -5,11 +5,13 @@ from norpy import simulate
 from norpy import get_random_model_specification, get_model_obj
 from smm_prep import get_moments,get_weigthing_matrix
 from norpy.adapter.SimulationBasedEstimation import SimulationBasedEstimationCls
+from optimizers.auxiliray_pyogba import wrapper_pybobyqa
 
 ###We want to generate a set of obeservations to be simulated. WHich decsions do we need
 num_agents_obs = 100
 num_boots=100
 num_periods = 20
+max_evals =100000
 decision_array = np.random.randint(1, 4, size=2000)
 period_array = np.array([np.arange(1, 21)] * 100).reshape(2000)
 identifier_array = np.zeros(2000)
@@ -27,16 +29,13 @@ weighting_matrix = get_weigthing_matrix(sim_df,num_agents_obs,num_boots)
 
 initialization_object = get_random_model_specification()
 
-#Now we need to get an optimizer
+#Now we start with the optimization
+args = (initialization_object, moment_obs, weighting_matrix, get_moments, max_evals)
+adapter_smm = SimulationBasedEstimationCls(*args)
 
+kwargs = dict()
+kwargs['scaling_within_bounds'] = False
+kwargs['objfun_has_noise'] = True
+kwargs['maxfun'] = 10e6
 
-
-
-
-
-
-
-
-
-
-
+rslt = wrapper_pybobyqa(adapter_smm.evaluate, adapter_smm.x_free_econ_start, **kwargs)
