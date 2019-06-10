@@ -1,0 +1,10 @@
+[submodule "submodules/analysis"]
+	path = submodules/analysis
+	url = https://github.com/OptionValueHumanCapital/analysis.git
+	branch = master
+
+[submodule "submodules/norpy"]
+	path = submodules/norpy
+	url = https://github.com/OpenSourceEconomics/norpy.git
+	branch = pj_cleanup_comaprison
+
