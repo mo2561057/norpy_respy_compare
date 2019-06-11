@@ -15,9 +15,9 @@ init_path = "/home/moritz/OpenSourceEconomics/dev_norpy/ressources/model.respy.i
 respy_example_dict = read_init_file(init_path)
 
 #Norpy example dict. We start witrh constrained values
-constr = {"num_types":4,
+constr = {"num_types":3,
           "intial_lagged_schooling_prob":1}
-norpy_example_dict = get_random_model_specification()
+norpy_example_dict = get_random_model_specification(constr=constr)
 
 
 def norpy_to_respy_spec(norpy_init,respy_init):
@@ -66,13 +66,13 @@ def norpy_to_respy_spec(norpy_init,respy_init):
 
     #Type SHARES
     out["TYPE SHARES"]["coeffs"][0] = norpy_init["type_prob_cond_schooling"][0,1]
-    out["TYPE SHARES"]["coeffs"][2] = norpy_init["type_prob_cond_schooling"][0,2]
+    out["TYPE SHARES"]["coeffs"][1] = norpy_init["type_prob_cond_schooling"][0,2]
 
     #Type Shifts
-    out["TYPE SHIFT"]["coeffs"][0] = norpy_init["type_shifts"][0][0]
-    out["TYPE SHIFT"]["coeffs"][2:4] = norpy_init["type_shifts"][0][1:3]
-    out["TYPE SHIFT"]["coeffs"][4] = norpy_init["type_shifts"][1][0]
-    out["TYPE SHIFT"]["coeffs"][5:7] = norpy_init["type_shifts"][1][1:3]
+    out["TYPE SHIFTS"]["coeffs"][0] = norpy_init["type_spec_shifts"][0][0]
+    out["TYPE SHIFTS"]["coeffs"][2:4] = norpy_init["type_spec_shifts"][0][1:3]
+    out["TYPE SHIFTS"]["coeffs"][4] = norpy_init["type_spec_shifts"][1][0]
+    out["TYPE SHIFTS"]["coeffs"][5:7] = norpy_init["type_spec_shifts"][1][1:3]
 
     #Sol details
     out["SOLUTION"]["seed"] = norpy_init["seed_emax"]
@@ -86,3 +86,4 @@ def norpy_to_respy_spec(norpy_init,respy_init):
 
 
 
+a=norpy_to_respy_spec(norpy_example_dict,respy_example_dict)
