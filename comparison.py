@@ -5,9 +5,11 @@ Then simulate each and compare the results.
 import numpy as np
 
 from norpy import simulate
-from norpy.model_spec import get_random_model_specification
+from norpy.model_spec import get_random_model_specification, get_model_obj
 from python.ov_simulation import ov_simulation
+from respy_smm.auxiliary_depreciation import respy_spec_old_to_new
 from respy.pre_processing.model_processing import write_init_file, read_init_file
+from respy import clsRespy
 
 init_path = "/home/moritz/OpenSourceEconomics/dev_norpy/ressources/model.respy.ini"
 
@@ -85,5 +87,11 @@ def norpy_to_respy_spec(norpy_init,respy_init):
     return out
 
 
-
+#Change the dict
 a=norpy_to_respy_spec(norpy_example_dict,respy_example_dict)
+#write new init file
+respy_obj = clsRespy(a)
+#Now run simulations
+sim_respy = ov_simulation(a)
+
+sim_norpy = simulate(get_model_obj(norpy_example_dict))
