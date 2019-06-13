@@ -3,6 +3,7 @@ Implement a function that returns equivalent specs for respy and norpy.
 Then simulate each and compare the results.
 """
 import numpy as np
+import pandas as pd
 
 from norpy import simulate
 from norpy.model_spec import get_random_model_specification, get_model_obj
@@ -22,10 +23,12 @@ respy_example_dict = read_init_file(init_path)
 #Norpy example dict. We start witrh constrained values
 constr = {"num_types":3,
           "num_edu_start":1,
-          "edu_range_start":np.array([9]),
+          "edu_range_start":np.array([8]),
           "intial_lagged_schooling_prob":float(1),
           "type_spec_shifts":np.zeros(9).reshape(3,3),
-          "shoskcs_cov":np.identity(3)}
+          "shocks_cov":np.identity(3),
+          "num_periods":10,
+          "num_agents_sim":1000}
 norpy_example_dict = get_random_model_specification(constr=constr)
 
 
@@ -55,12 +58,14 @@ def norpy_to_respy_spec(norpy_init,respy_init):
 
 
     #Education
-    out["EDUCATION"]["coeff"] = norpy_init["coeffs_edu"]
+    out["EDUCATION"]["coeffs"] = norpy_init["coeffs_edu"]
+
+
     out["EDUCATION"]["start"] = norpy_init["edu_range_start"]
     out["EDUCATION"]["max"] = norpy_init["edu_max"]
 
     #Home
-    out["HOME"]["coeffs"] = np.zeros(3)
+
     out["HOME"]["coeffs"][0] = norpy_init["coeffs_home"][0]
     out["HOME"]["coeffs"][2] = norpy_init["coeffs_home"][1]
 
@@ -107,3 +112,7 @@ respy_obj = respy_obj_from_new_init(a)
 sim_respy = ov_simulation(respy_obj)
 
 sim_norpy = simulate(get_model_obj(norpy_example_dict))
+
+#Get a dict that compares the most impoirtant moments
+decision_norpy= pd.Series(sim_norpy[:,2]).value_counts()
+decision_respy= pd.Series(sim_respy[:,2]).value_counts()
