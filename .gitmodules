@@ -1,7 +1,7 @@
 [submodule "submodules/analysis"]
 	path = submodules/analysis
 	url = https://github.com/OptionValueHumanCapital/analysis.git
-	branch = master
+	branch = compare_to_norpy
 
 [submodule "submodules/norpy"]
 	path = submodules/norpy

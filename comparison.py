@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 
 from norpy import simulate
+from norpy.simulate.simulate import simulate_compare, return_simulated_shocks
 from norpy.model_spec import get_random_model_specification, get_model_obj
 from respy_smm.auxiliary_depreciation import respy_ini_old_to_new
-from python.ov_simulation import ov_simulation
+from python.ov_simulation import ov_simulation, ov_simulation_alt
 from respy_smm.auxiliary_depreciation import respy_spec_old_to_new
 from respy.pre_processing.model_processing import write_init_file, read_init_file, convert_init_dict_to_attr_dict
 from respy import clsRespy
@@ -23,7 +24,7 @@ respy_example_dict = read_init_file(init_path)
 #Norpy example dict. We start witrh constrained values
 constr = {"num_types":3,
           "num_edu_start":1,
-          "edu_range_start":np.array([8]),
+          "edu_range_start":np.array([9]),
           "intial_lagged_schooling_prob":float(1),
           "type_spec_shifts":np.zeros(9).reshape(3,3),
           "shocks_cov":np.identity(3),
@@ -101,12 +102,9 @@ def norpy_to_respy_spec(norpy_init,respy_init):
 #Change the dict
 a=norpy_to_respy_spec(norpy_example_dict,respy_example_dict)
 
-
 #write new init file
 respy_obj = respy_obj_from_new_init(a)
-
-
-
+norpy_obj = get_model_obj(norpy_example_dict)
 
 #Now run simulations
 sim_respy = ov_simulation(respy_obj)
@@ -116,3 +114,17 @@ sim_norpy = simulate(get_model_obj(norpy_example_dict))
 #Get a dict that compares the most impoirtant moments
 decision_norpy= pd.Series(sim_norpy[:,2]).value_counts()
 decision_respy= pd.Series(sim_respy[:,2]).value_counts()
+
+
+#Up next generate auxiliary shocks that are equal and pass them to the functions !
+shocks = dict()
+#shocks["emax"] = return_simulated_shocks(norpy_obj)
+#shocks["simulation"] = return_simulated_shocks(norpy_obj, True)
+shocks["emax"] = np.zeros(norpy_example_dict["num_draws_emax"])
+shocks["simulation"] = np.zeros(norpy_example_dict["num_agents_sim"])
+
+sim_norpy_shocks = simulate_compare(norpy_obj,shocks)
+sim_respy_shocks = ov_simulation_alt(respy_obj,shocks)
+
+decision_norpy_shocks= pd.Series(sim_norpy_shocks[:,2]).value_counts()
+decision_respy_shocks= pd.Series(sim_respy_shocks[:,2]).value_counts()
