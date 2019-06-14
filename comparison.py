@@ -53,9 +53,9 @@ def norpy_to_respy_spec(norpy_init,respy_init):
     out["COMMON"]["coeffs"] = norpy_init["coeffs_common"]
 
     #WOrk
-    out["OCCUPATION A"]["coeffs"][:3] = norpy_init["coeffs_work"][:4]
-    out["OCCUPATION A"]["coeffs"][3:8] = norpy_init["coeffs_work"][4:7]
-    out["OCCUPATION A"]["coeffs"][9:] = norpy_init["coeffs_work"][7:]
+    out["OCCUPATION A"]["coeffs"][:4] = norpy_init["coeffs_work"][:4]
+    out["OCCUPATION A"]["coeffs"][6:] = norpy_init["coeffs_work"][4:]
+
 
 
     #Education
@@ -128,3 +128,7 @@ sim_respy_shocks = ov_simulation_alt(respy_obj,shocks)
 
 decision_norpy_shocks= pd.Series(sim_norpy_shocks[:,2]).value_counts()
 decision_respy_shocks= pd.Series(sim_respy_shocks[:,2]).value_counts()
+
+
+
+
