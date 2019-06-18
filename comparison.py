@@ -28,10 +28,10 @@ constr = {"num_types":3,
           "intial_lagged_schooling_prob":float(1),
           "type_spec_shifts":np.zeros(9).reshape(3,3),
           "shocks_cov":np.identity(3),
-          "num_periods":10,
+          "num_periods":1,
           "num_agents_sim":1000}
 norpy_example_dict = get_random_model_specification(constr=constr)
-
+norpy_example_dict["coeffs_work"][7] =0
 
 def norpy_to_respy_spec(norpy_init,respy_init):
     """
@@ -55,8 +55,7 @@ def norpy_to_respy_spec(norpy_init,respy_init):
     #WOrk
     out["OCCUPATION A"]["coeffs"][:4] = norpy_init["coeffs_work"][:4]
     out["OCCUPATION A"]["coeffs"][6:] = norpy_init["coeffs_work"][4:]
-
-
+    out["OCCUPATION A"]["coeffs"][9] = 0
 
     #Education
     out["EDUCATION"]["coeffs"] = norpy_init["coeffs_edu"]
@@ -117,15 +116,23 @@ decision_respy= pd.Series(sim_respy[:,2]).value_counts()
 
 
 #Up next generate auxiliary shocks that are equal and pass them to the functions !
-shocks = dict()
+shocks_respy = dict()
+shocks_norpy = dict()
 #shocks["emax"] = return_simulated_shocks(norpy_obj)
 #shocks["simulation"] = return_simulated_shocks(norpy_obj, True)
-shocks["emax"] = np.zeros(norpy_example_dict["num_draws_emax"])
-shocks["simulation"] = np.zeros(norpy_example_dict["num_agents_sim"])
+shocks_respy["emax"] = np.zeros(
+    norpy_example_dict["num_draws_emax"]*4*norpy_example_dict["num_periods"]).reshape(norpy_example_dict["num_periods"],norpy_example_dict["num_draws_emax"],4)
+shocks_respy["simulation"] = np.zeros(
+    norpy_example_dict["num_agents_sim"]*4*norpy_example_dict["num_periods"]).reshape(norpy_example_dict["num_periods"],norpy_example_dict["num_agents_sim"],4)
 
-sim_norpy_shocks = simulate_compare(norpy_obj,shocks)
-sim_respy_shocks = ov_simulation_alt(respy_obj,shocks)
+shocks_norpy["emax"] = np.zeros(
+    norpy_example_dict["num_draws_emax"]*3*norpy_example_dict["num_periods"]).reshape(norpy_example_dict["num_periods"],norpy_example_dict["num_draws_emax"],3)
+shocks_norpy["simulation"] = np.zeros(
+    norpy_example_dict["num_agents_sim"]*3*norpy_example_dict["num_periods"]).reshape(norpy_example_dict["num_periods"],norpy_example_dict["num_agents_sim"],3)
 
+
+sim_norpy_shocks = simulate_compare(norpy_obj,shocks_norpy)
+sim_respy_shocks = ov_simulation_alt(respy_obj,shocks_respy)
 decision_norpy_shocks= pd.Series(sim_norpy_shocks[:,2]).value_counts()
 decision_respy_shocks= pd.Series(sim_respy_shocks[:,2]).value_counts()
 
