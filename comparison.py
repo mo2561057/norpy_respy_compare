@@ -10,8 +10,8 @@ import matplotlib as mp
 from norpy import simulate
 from norpy.simulate.simulate import simulate_compare, return_simulated_shocks
 from norpy.model_spec import get_random_model_specification, get_model_obj
-from setup import test_setup,simulate_models, simulate_models_no_shocks
-from python.ov_simulation import ov_simulation, ov_simulation_alt
+from setup import test_setup,simulate_models, simulate_models_no_shocks, test_func
+#from python.ov_simulation import ov_simulation, ov_simulation_alt
 from respy_smm.auxiliary import smm_sample_f2py, get_initial_conditions
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 
@@ -36,36 +36,23 @@ constr = {"num_types":3,
 
 
 
-norpy_sim,respy_sim,norpy_obj, respy_obj = simulate_models_no_shocks(constr, init_path)
-
+norpy_sim,respy_sim,norpy_init,respy_init = simulate_models_no_shocks(constr, init_path)
+np.testing.assert_array_almost_equal(norpy_sim[:, 11], respy_sim[:, 13])
 
 
 def test_setup_no_shock_irw():
     df_norpy, df_respy, respy_obj, norpy_obj = simulate_models_no_shocks(constr, init_path)
     np.testing.assert_array_almost_equal(df_norpy[:, 11], df_respy[:, 13])
-
-def test_setup_no_shock_ire():
-    df_norpy, df_respy, respy_obj, norpy_obj = simulate_models_no_shocks(constr, init_path)
     np.testing.assert_array_almost_equal(df_norpy[:, 9], df_respy[:, 11])
-
-def test_setup_no_shock_irh():
-    df_norpy, df_respy, respy_obj, norpy_obj = simulate_models_no_shocks(constr, init_path)
     np.testing.assert_array_almost_equal(df_norpy[:, 10], df_respy[:, 12])
+    np.testing.assert_array_almost_equal(df_norpy[:, 8], df_respy[:, 9])
+
 
 
 for x in range(1000):
     test_setup_no_shock_irw()
     print("test_irw_{}_worked".format(x))
 
-for x in range(1000):
-    test_setup_no_shock_ire()
-    print("test_ire_{}_worked".format(x))
-
-for x in range(1000):
-    test_setup_no_shock_irh()
-    print("test_irh_{}_worked".format(x))
 
 
-def plot_dif(pos_norpy, pos_respy):
-    df_norpy, df_respy = simulate_models_no_shocks(constr, init_path)
-    series = df_norpy[:,pos_norpy]-df_respy[:,]
+

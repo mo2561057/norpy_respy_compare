@@ -8,7 +8,7 @@ import pandas as pd
 from norpy import simulate
 from norpy.simulate.simulate import simulate_compare, return_simulated_shocks
 from norpy.model_spec import get_random_model_specification, get_model_obj
-from respy_smm.auxiliary_depreciation import respy_ini_old_to_new
+#from respy_smm.auxiliary_depreciation import respy_ini_old_to_new
 from python.ov_simulation import ov_simulation, ov_simulation_alt
 from respy_smm.auxiliary_depreciation import respy_spec_old_to_new
 from respy.pre_processing.model_processing import write_init_file, read_init_file, convert_init_dict_to_attr_dict
@@ -19,11 +19,11 @@ from comparison_auxiliary import respy_obj_from_new_init
 
 
 def simulate_models_no_shocks(constr, init_path):
-    norpy_obj, respy_obj, shocks_norpy, shocks_respy = test_setup(constr,init_path)
+    norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init = test_setup(constr,init_path)
 
     sim_norpy = simulate_compare(norpy_obj,shocks_norpy)
     sim_respy =ov_simulation_alt(respy_obj,shocks_respy)
-    return sim_norpy, sim_respy, norpy_obj, respy_obj
+    return sim_norpy, sim_respy, norpy_init, respy_init
 
 def simulate_models(constr, init_path):
     norpy_obj, respy_obj = test_setup(constr, init_path)
@@ -48,7 +48,7 @@ def test_setup(constr,init_path):
     respy_obj = respy_obj_from_new_init(respy_init)
     norpy_obj = get_model_obj(norpy_init)
     shocks_norpy, shocks_respy = get_no_shocks(norpy_init)
-    return norpy_obj, respy_obj, shocks_norpy, shocks_respy
+    return norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init
 
 def get_no_shocks(norpy_init):
     shocks_respy = dict()
@@ -132,6 +132,21 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
     out["SIMULATION"]["seed"] = norpy_init["seed_sim"]
 
     return out
+
+def test_func(norpy_init,init_path):
+    respy_prelim_init = read_init_file(init_path)
+    respy_init = _norpy_to_respy_spec(norpy_init,respy_prelim_init)
+    #Get model objects
+    respy_obj = respy_obj_from_new_init(respy_init)
+    norpy_obj = get_model_obj(norpy_init)
+    shocks_norpy, shocks_respy = get_no_shocks(norpy_init)
+    sim_norpy = simulate_compare(norpy_obj,shocks_norpy)
+    sim_respy =ov_simulation_alt(respy_obj,shocks_respy)
+    return sim_norpy, sim_respy
+
+
+
+
 
 
 
