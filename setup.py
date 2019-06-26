@@ -18,11 +18,11 @@ from comparison_auxiliary import respy_obj_from_new_init
 
 
 
-def simulate_models_no_shocks(constr, init_path):
-    norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init = test_setup(constr,init_path)
+def simulate_models_det_shocks(constr, init_path, shocks = "zero"):
+    norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init = test_setup(constr,init_path, shocks = shocks)
 
     sim_norpy = simulate_compare(norpy_obj,shocks_norpy)
-    sim_respy =ov_simulation_alt(respy_obj,shocks_respy)
+    sim_respy = ov_simulation_alt(respy_obj,shocks_respy)
     return sim_norpy, sim_respy, norpy_init, respy_init
 
 def simulate_models(constr, init_path):
@@ -32,11 +32,12 @@ def simulate_models(constr, init_path):
     return sim_norpy, sim_respy
 
 
-def test_setup(constr,init_path):
+def test_setup(constr,init_path,shocks):
     """
     This function returns relevant model_objects
 
     """
+    print('I am here')
     #Get an init dict for norpy
     norpy_init = get_random_model_specification(constr=constr)
     #Somehow we fixe that to zero for now
@@ -47,7 +48,10 @@ def test_setup(constr,init_path):
     #Get model objects
     respy_obj = respy_obj_from_new_init(respy_init)
     norpy_obj = get_model_obj(norpy_init)
-    shocks_norpy, shocks_respy = get_no_shocks(norpy_init)
+    if shocks == "zero":
+        shocks_norpy, shocks_respy = get_no_shocks(norpy_init)
+    elif shocks == "random":
+        shocks_norpy, shocks_respy = get_valid_shocks(norpy_obj)
     return norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init
 
 def get_no_shocks(norpy_init):
@@ -69,6 +73,8 @@ def get_no_shocks(norpy_init):
         norpy_init["num_agents_sim"] * 3 * norpy_init["num_periods"]).reshape(
         norpy_init["num_periods"], norpy_init["num_agents_sim"], 3)
     return shocks_norpy,shocks_respy
+
+
 
 def _norpy_to_respy_spec(norpy_init, respy_init):
     """
@@ -145,6 +151,24 @@ def test_func(norpy_init,init_path):
     return sim_norpy, sim_respy
 
 
+
+
+def get_valid_shocks(norpy_object):
+    norpy_shocks = dict()
+    norpy_shocks["emax"] = return_simulated_shocks(norpy_object)
+    norpy_shocks["simulation"] = return_simulated_shocks(norpy_object, True)
+    respy_shocks = dict()
+    respy_shocks["emax"] = np.zeros(
+        norpy_object.num_draws_emax * 4 * norpy_object.num_periods).reshape(
+        norpy_object.num_periods, norpy_object.num_draws_emax, 4)
+    respy_shocks["simulation"] = np.zeros(
+        norpy_object.num_agents_sim * 4 * norpy_object.num_periods).reshape(
+        norpy_object.num_periods, norpy_object.num_agents_sim, 4)
+    respy_shocks["emax"][:,:,0] = norpy_shocks["emax"][:,:,0]
+    respy_shocks["emax"][:, :, 2:4] = norpy_shocks["emax"][:, :, 1:3]
+    respy_shocks["simulation"][:,:,0] = norpy_shocks["simulation"][:,:,0]
+    respy_shocks["simulation"][:, :, 2:4] = norpy_shocks["simulation"][:, :, 1:3]
+    return norpy_shocks, respy_shocks
 
 
 
