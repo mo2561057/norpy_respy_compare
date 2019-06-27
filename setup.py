@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 
 from norpy import simulate
-from norpy.simulate.simulate import simulate_compare, return_simulated_shocks
+from norpy.simulate.simulate import simulate_compare, return_simulated_shocks,simulate_compare_semi
 from norpy.model_spec import get_random_model_specification, get_model_obj
 #from respy_smm.auxiliary_depreciation import respy_ini_old_to_new
-from python.ov_simulation import ov_simulation, ov_simulation_alt
+from python.ov_simulation import ov_simulation, ov_simulation_alt,ov_simulation_alt_semi
 from respy_smm.auxiliary_depreciation import respy_spec_old_to_new
 from respy.pre_processing.model_processing import write_init_file, read_init_file, convert_init_dict_to_attr_dict
 from respy import clsRespy
@@ -17,6 +17,13 @@ from comparison_auxiliary import respy_obj_from_new_init
 
 
 
+
+def simulate_models_semi_det_shocks(constr, init_path, shocks = "zero"):
+    norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init, = test_setup(constr,init_path, shocks = shocks)
+    sample_edu_start, sample_lagged_start, sample_edu_start_respy, sample_lagged_start_respy = get_initial_values(norpy_obj)
+    sim_norpy = simulate_compare_semi(norpy_obj,shocks_norpy, sample_lagged_start,sample_edu_start)
+    sim_respy = ov_simulation_alt_semi(respy_obj,shocks_respy,sample_edu_start_respy, sample_lagged_start_respy)
+    return sim_norpy, sim_respy, norpy_init, respy_init
 
 def simulate_models_det_shocks(constr, init_path, shocks = "zero"):
     norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init = test_setup(constr,init_path, shocks = shocks)
@@ -41,7 +48,7 @@ def test_setup(constr,init_path,shocks):
     #Get an init dict for norpy
     norpy_init = get_random_model_specification(constr=constr)
     #Somehow we fixe that to zero for now
-    norpy_init["coeffs_work"][7] = 0
+    #norpy_init["coeffs_work"][7] = 0
     #Get respy_init
     respy_prelim_init = read_init_file(init_path)
     respy_init = _norpy_to_respy_spec(norpy_init,respy_prelim_init)
@@ -53,6 +60,8 @@ def test_setup(constr,init_path,shocks):
     elif shocks == "random":
         shocks_norpy, shocks_respy = get_valid_shocks(norpy_obj)
     return norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init
+
+
 
 def get_no_shocks(norpy_init):
     shocks_respy = dict()
@@ -105,6 +114,9 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
 
     out["EDUCATION"]["start"] = norpy_init["edu_range_start"]
     out["EDUCATION"]["max"] = norpy_init["edu_max"]
+    out["EDUCATION"]["share"] = np.array([1/norpy_init["num_edu_start"]]*norpy_init["num_edu_start"])
+    out["EDUCATION"]["lagged"] = np.array([norpy_init["intial_lagged_schooling_prob"]] * norpy_init["num_edu_start"])
+
 
     # Home
 
@@ -174,4 +186,29 @@ def get_valid_shocks(norpy_object):
 
 
 
+def get_initial_values(norpy_object):
+    """
 
+
+    """
+    np.random.seed(norpy_object.seed_sim)
+    sample_lagged_start = np.random.choice(
+        [2, 3],
+        p=[
+            norpy_object.intial_lagged_schooling_prob,
+            1 - norpy_object.intial_lagged_schooling_prob,
+        ],
+        size=norpy_object.num_agents_sim,
+    )
+    sample_edu_start = np.random.choice(
+        norpy_object.edu_range_start, size=norpy_object.num_agents_sim
+    )
+    sample_lagged_start_respy = sample_lagged_start.copy()
+
+    sample_lagged_start_respy[sample_lagged_start_respy == 3] = 4
+    sample_lagged_start_respy[sample_lagged_start_respy == 2] = 3
+
+    print(sample_lagged_start_respy)
+    sample_edu_start_respy = sample_edu_start
+
+    return  sample_edu_start,sample_lagged_start, sample_edu_start_respy , sample_lagged_start_respy
