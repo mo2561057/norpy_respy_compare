@@ -19,7 +19,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 init_path = "/home/moritz/OpenSourceEconomics/dev_norpy/ressources/model.respy.ini"
 
 constr = {"num_types":3,
-          
+
           "type_spec_shifts":np.zeros(9).reshape(3,3),
           "shocks_cov":np.identity(3),
           "num_agents_sim":1000}

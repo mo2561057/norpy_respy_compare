@@ -59,6 +59,9 @@ def test_setup(constr,init_path,shocks):
         shocks_norpy, shocks_respy = get_no_shocks(norpy_init)
     elif shocks == "random":
         shocks_norpy, shocks_respy = get_valid_shocks(norpy_obj)
+    elif shocks == "base":
+        shocks_norpy, shocks_respy = create_original_shocks(norpy_obj)
+
     return norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init
 
 
@@ -125,11 +128,32 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
 
     # Shocks
     # For now nehmen wir einfach die identity
-    out["SHOCKS"]["coeffs"][0] = 1
-    out["SHOCKS"]["coeffs"][2:4] = np.ones(2)
-    out["SHOCKS"]["coeffs"][5] = 0
-    out["SHOCKS"]["coeffs"][7] = 0
-    out["SHOCKS"]["coeffs"][9] = 0
+    aux= norpy_init["shocks_cov"]
+
+    aux = np.insert(aux, 1, 1, axis=1)
+    aux = np.insert(aux, 1, 1, axis=0)
+    aux = np.linalg.cholesky(aux)
+
+
+    out["SHOCKS"]["coeffs"][0] = aux[0,0]
+    out["SHOCKS"]["coeffs"][1] = aux[1, 1]
+    out["SHOCKS"]["coeffs"][2] = aux[2, 2]
+    out["SHOCKS"]["coeffs"][3] = aux[3, 3]
+    out["SHOCKS"]["coeffs"][4] = aux[1, 0]
+    out["SHOCKS"]["coeffs"][5] = aux[2, 0]
+    out["SHOCKS"]["coeffs"][6] = aux[3, 0]
+    out["SHOCKS"]["coeffs"][7] = aux[2, 1]
+    out["SHOCKS"]["coeffs"][8] = aux[3, 1]
+    out["SHOCKS"]["coeffs"][9] = aux[3, 2]
+
+    #print(out["SHOCKS"])
+    #print(norpy_init["shocks_cov"])
+
+    #out["SHOCKS"]["coeffs"][0] = 2**(0.5)
+    #out["SHOCKS"]["coeffs"][2:4] = np.array([2**(0.5)]*2)
+    #out["SHOCKS"]["coeffs"][5] = 0
+    #out["SHOCKS"]["coeffs"][7] = 0
+    #out["SHOCKS"]["coeffs"][9] = 0
 
     # Type SHARES
     out["TYPE SHARES"]["coeffs"][0] = norpy_init["type_prob_cond_schooling"][0, 1]
@@ -212,3 +236,52 @@ def get_initial_values(norpy_object):
     sample_edu_start_respy = sample_edu_start
 
     return  sample_edu_start,sample_lagged_start, sample_edu_start_respy , sample_lagged_start_respy
+
+
+def create_original_shocks(norpy_object):
+    """
+    """
+    respy_shocks = dict()
+    norpy_shocks = dict()
+
+    respy_shocks["emax"] = np.random.multivariate_normal(
+            np.zeros(4), np.identity(4), (norpy_object.num_periods,
+                                          norpy_object.num_draws_emax)
+        )
+    respy_shocks["simulation"] = np.random.multivariate_normal(
+        np.zeros(4), np.identity(4), (norpy_object.num_periods,
+                                      norpy_object.num_agents_sim)
+    )
+
+    norpy_shocks["emax"] = np.zeros(
+        norpy_object.num_draws_emax * 3 * norpy_object.num_periods).reshape(
+        norpy_object.num_periods, norpy_object.num_draws_emax, 3)
+
+    norpy_shocks["simulation"] = np.zeros(
+        norpy_object.num_agents_sim * 3 * norpy_object.num_periods).reshape(
+        norpy_object.num_periods, norpy_object.num_agents_sim,3)
+
+    print("cp0")
+    norpy_shocks["emax"][:,:,0] = respy_shocks["emax"][:,:,0]
+        #.reshape(
+        #norpy_object.num_periods, norpy_object.num_draws_emax, 1
+    #)
+    print("cp1")
+    norpy_shocks["emax"][:,:,1:3] = respy_shocks["emax"][:,:,2:4].reshape(
+        norpy_object.num_periods, norpy_object.num_draws_emax, 2
+    )
+    print("cp2")
+    norpy_shocks["simulation"][:, :, 0] = respy_shocks["simulation"][:, :, 0]
+    print("cp3")
+    norpy_shocks["simulation"][:, :, 1:3] = respy_shocks["simulation"][:, :, 2:4].reshape(
+        norpy_object.num_periods, norpy_object.num_agents_sim,2)
+
+    shocks_cholesky = np.linalg.cholesky(norpy_object.shocks_cov )
+    norpy_shocks["emax"] = np.einsum("ijk,hk -> ijk ",norpy_shocks["emax"],shocks_cholesky)
+    print(norpy_shocks["emax"])
+    norpy_shocks["simulation"] = np.einsum("ijk,hk -> ijk ", norpy_shocks["simulation"], shocks_cholesky)
+    return norpy_shocks, respy_shocks
+
+
+
+
