@@ -22,7 +22,7 @@ constr = {"num_types":3,
           "edu_range_start":np.array([9]),
           "intial_lagged_schooling_prob":float(1),
           "type_spec_shifts":np.zeros(9).reshape(3,3),
-          "shocks_cov":np.identity(3)*2,
+          #"shocks_cov":np.identity(3)*2,
           "num_agents_sim":1000}
 
 norpy_sim,respy_sim,norpy_init,respy_init = simulate_models_det_shocks(constr, init_path,shocks="base")
