@@ -134,7 +134,7 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
     aux = np.insert(aux, 1, [0,1,0,0], axis=0)
     #print(aux)
     aux = np.linalg.cholesky(aux)
-    print(aux)
+    #print(aux)
     print("cp2")
 
 
@@ -295,10 +295,11 @@ def create_original_shocks(norpy_object):
         norpy_object.num_periods, norpy_object.num_agents_sim,2)
 
     shocks_cholesky = np.linalg.cholesky(norpy_object.shocks_cov )
-    norpy_shocks["emax"] = np.einsum("ijk,hk -> ijk ",norpy_shocks["emax"],shocks_cholesky.T)
+    norpy_shocks["emax"] = np.einsum("ijk,kh -> ijh ",norpy_shocks["emax"],shocks_cholesky.T)
     #print(norpy_shocks["emax"])
-    norpy_shocks["simulation"] = np.einsum("ijk,hk -> ijk ", norpy_shocks["simulation"], shocks_cholesky.T)
+    norpy_shocks["simulation"] = np.einsum("ijk,kh -> ijh ",norpy_shocks["simulation"],shocks_cholesky.T )
     return norpy_shocks, respy_shocks
+
 
 
 
