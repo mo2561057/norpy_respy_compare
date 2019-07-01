@@ -37,13 +37,13 @@ def test_setup_no_shock_irw():
 
 
 
-for x in range(10):
+for x in range(1):
     test_setup_no_shock_irw()
     print("test_irw_{}_worked".format(x))
 
 constr = {"num_types":3,
           "type_spec_shifts":np.zeros(9).reshape(3,3),
-          "shocks_cov":np.identity(3),
+          #"shocks_cov":np.identity(3),
           "num_agents_sim":1000}
 
 norpy_sim,respy_sim,norpy_init,respy_init = simulate_models_semi_det_shocks(constr, init_path,shocks="base")

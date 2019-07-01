@@ -20,9 +20,9 @@ from comparison_auxiliary import respy_obj_from_new_init
 
 def simulate_models_semi_det_shocks(constr, init_path, shocks = "zero"):
     norpy_obj, respy_obj, shocks_norpy, shocks_respy, norpy_init, respy_init, = test_setup(constr,init_path, shocks = shocks)
-    sample_edu_start, sample_lagged_start, sample_edu_start_respy, sample_lagged_start_respy = get_initial_values(norpy_obj)
-    sim_norpy = simulate_compare_semi(norpy_obj,shocks_norpy, sample_lagged_start,sample_edu_start)
-    sim_respy = ov_simulation_alt_semi(respy_obj,shocks_respy,sample_edu_start_respy, sample_lagged_start_respy)
+    sample_edu_start, sample_lagged_start, sample_edu_start_respy, sample_lagged_start_respy, sample_types = get_initial_values(norpy_obj)
+    sim_norpy = simulate_compare_semi(norpy_obj,shocks_norpy, sample_lagged_start,sample_edu_start,sample_types)
+    sim_respy = ov_simulation_alt_semi(respy_obj,shocks_respy,sample_edu_start_respy, sample_lagged_start_respy,sample_types)
     return sim_norpy, sim_respy, norpy_init, respy_init
 
 def simulate_models_det_shocks(constr, init_path, shocks = "zero"):
@@ -135,7 +135,7 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
     #print(aux)
     aux = np.linalg.cholesky(aux)
     #print(aux)
-    print("cp2")
+
 
 
     out["SHOCKS"]["coeffs"][0] = aux[0,0]
@@ -170,14 +170,41 @@ def _norpy_to_respy_spec(norpy_init, respy_init):
     #out["SHOCKS"]["coeffs"][9] = 0
 
     # Type SHARES
-    out["TYPE SHARES"]["coeffs"][0] = norpy_init["type_prob_cond_schooling"][0, 1]
-    out["TYPE SHARES"]["coeffs"][1] = norpy_init["type_prob_cond_schooling"][0, 2]
+    #out["TYPE SHARES"]["coeffs"][0] = norpy_init["type_prob_cond_schooling"][0, 1]
+    #out["TYPE SHARES"]["coeffs"][1] = norpy_init["type_prob_cond_schooling"][0, 2]
 
     # Type Shifts
-    out["TYPE SHIFTS"]["coeffs"][0] = norpy_init["type_spec_shifts"][1][0]
-    out["TYPE SHIFTS"]["coeffs"][2:4] = norpy_init["type_spec_shifts"][1][1:3]
-    out["TYPE SHIFTS"]["coeffs"][4] = norpy_init["type_spec_shifts"][2][0]
-    out["TYPE SHIFTS"]["coeffs"][5:7] = norpy_init["type_spec_shifts"][2][1:3]
+
+    #out["TYPE SHIFTS"]["coeffs"][0] = norpy_init["type_spec_shifts"][0][0]
+    #out["TYPE SHIFTS"]["coeffs"][2:4] = norpy_init["type_spec_shifts"][0][1:3]
+    #out["TYPE SHIFTS"]["coeffs"] = np.zeros(8)
+
+    #out["TYPE SHIFTS"]["coeffs"][0] = norpy_init["type_spec_shifts"][1][0]
+    #out["TYPE SHIFTS"]["coeffs"][1] = 0
+    #out["TYPE SHIFTS"]["coeffs"][2:4] = norpy_init["type_spec_shifts"][1][1:3]
+
+    #out["TYPE SHIFTS"]["coeffs"][4] = norpy_init["type_spec_shifts"][2][0]
+    #out["TYPE SHIFTS"]["coeffs"][5] = 0
+    #out["TYPE SHIFTS"]["coeffs"][6:8] = norpy_init["type_spec_shifts"][2][1:3]
+    aux = norpy_init["type_spec_shifts"][1:,:].reshape((norpy_init["num_types"] - 1)*3)
+    pos = np.arange(1,(norpy_init["num_types"] - 1)*3,3)
+    out["TYPE SHIFTS"]["coeffs"] = np.insert(aux,pos,1)
+
+    out["TYPE SHARES"]["fixed"] = np.zeros((norpy_init["num_types"]) * 3)
+
+    #out["TYPE SHARES"]["fixed"][:] = True
+    out["TYPE SHARES"]["bounds"] = [(-np.inf,np.inf)]*norpy_init["num_types"]*3
+
+
+
+    out["TYPE SHARES"]["coeffs"] = np.array([0.5]*(norpy_init["num_types"] - 1)*2)
+
+
+
+
+    #out["TYPE SHIFTS"]["coeffs"] = np.insert(arr, pos, 0)
+    print(out["TYPE SHIFTS"]["coeffs"])
+
 
     # Sol details
     out["SOLUTION"]["seed"] = norpy_init["seed_emax"]
@@ -230,6 +257,8 @@ def get_initial_values(norpy_object):
 
     """
     np.random.seed(norpy_object.seed_sim)
+    sample_types = np.random.choice(np.arange(1,norpy_object.num_types+1),
+                                    size=norpy_object.num_agents_sim)
     sample_lagged_start = np.random.choice(
         [2, 3],
         p=[
@@ -249,7 +278,7 @@ def get_initial_values(norpy_object):
     print(sample_lagged_start_respy)
     sample_edu_start_respy = sample_edu_start
 
-    return  sample_edu_start,sample_lagged_start, sample_edu_start_respy , sample_lagged_start_respy
+    return  sample_edu_start,sample_lagged_start, sample_edu_start_respy , sample_lagged_start_respy, sample_types
 
 
 def create_original_shocks(norpy_object):
